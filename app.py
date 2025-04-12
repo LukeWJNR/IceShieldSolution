@@ -21,6 +21,7 @@ could help preserve and expand sea ice formation in polar regions, particularly 
 2. **Calculate** freshwater requirements for salinity reduction
 3. **Simulate** potential ice expansion based on salinity changes
 4. **Compare** different geoengineering approaches
+5. **Save** your simulation scenarios and results to the database
 
 ### Why This Matters:
 
@@ -57,10 +58,26 @@ with col2:
 
 st.subheader("Explore the Simulator")
 
-st.info("""
-Navigate through the pages in the sidebar to explore different aspects of sea ice 
-preservation through salinity reduction. Each page focuses on a specific topic and 
-provides interactive tools to help you understand the concepts.
+col1, col2 = st.columns(2)
 
-**Get started by selecting a page from the sidebar!**
-""")
+with col1:
+    st.info("""
+    Navigate through the pages in the sidebar to explore different aspects of sea ice 
+    preservation through salinity reduction. Each page focuses on a specific topic and 
+    provides interactive tools to help you understand the concepts.
+
+    **Get started by selecting a page from the sidebar!**
+    """)
+
+with col2:
+    st.success("""
+    ### New Database Feature!
+    
+    You can now save your simulation scenarios and results to a database for future reference.
+    
+    - Save your favorite parameter combinations
+    - Track simulation history
+    - Compare different approaches
+    
+    Check out the **Saved Simulations** page in the sidebar.
+    """)
