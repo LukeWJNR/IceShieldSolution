@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import json
 from utils.visualizations import plot_geoengineering_comparison
+from utils.database import get_geoengineering_approaches
 
 st.title("Geoengineering Approaches")
 
@@ -16,44 +18,25 @@ This page compares these different methods, with a focus on salinity reduction t
 # Overview of approaches
 st.subheader("Overview of Geoengineering Approaches")
 
-approaches = {
-    "Salinity Reduction": {
-        "description": "Reducing the salinity of surface water to increase its freezing point and promote ice formation.",
-        "methods": ["Freshwater addition", "Desalination ships", "River diversion"],
-        "advantages": ["Works with natural freezing processes", "Potentially reversible", "Could be targeted regionally"],
-        "challenges": ["Requires large volumes of freshwater", "Logistical complexity", "Ocean mixing challenges"]
-    },
-    "Ice Thickening": {
-        "description": "Pumping water onto the surface of ice sheets to freeze and thicken the ice.",
-        "methods": ["Surface pumping systems", "Renewable energy-powered pumps"],
-        "advantages": ["Directly adds ice mass", "Proven in small-scale tests", "Relatively straightforward technology"],
-        "challenges": ["Energy requirements", "Limited to existing ice areas", "Coverage limitations"]
-    },
-    "Reflective Materials": {
-        "description": "Spreading reflective materials on ice surfaces to increase albedo and reduce melting.",
-        "methods": ["Glass microbeads", "Reflective films", "Engineered particles"],
-        "advantages": ["Could reduce melting by up to 30%", "Immediate effect", "Adaptable to different regions"],
-        "challenges": ["Environmental concerns", "Material dispersion", "Potential ecological impacts"]
-    },
-    "Undersea Barriers": {
-        "description": "Constructing underwater curtains or barriers to block warm ocean currents from reaching ice shelves.",
-        "methods": ["Floating curtains", "Seabed anchored barriers", "Thermal screens"],
-        "advantages": ["Targets a major cause of ice shelf melting", "Could protect critical glaciers", "Long-lasting"],
-        "challenges": ["Enormous engineering challenge", "Very high costs", "Potential navigation impacts"]
-    },
-    "Cloud Seeding": {
-        "description": "Enhancing snowfall over ice sheets by seeding clouds with substances like silver iodide.",
-        "methods": ["Aircraft dispersal", "Ground-based generators", "Drone systems"],
-        "advantages": ["Builds on existing technology", "Could increase ice accumulation", "Relatively low cost"],
-        "challenges": ["Weather dependency", "Uncertain efficacy", "Limited geographical application"]
-    },
-    "Geotextiles": {
-        "description": "Wrapping glaciers in protective films or geotextiles to insulate them and reduce heat absorption.",
-        "methods": ["Insulating blankets", "Reflective covers", "Biodegradable films"],
-        "advantages": ["Demonstrated effectiveness in small areas", "Targeted protection", "Removable"],
-        "challenges": ["Scaling limitations", "Material requirements", "Visual impact"]
+# Fetch geoengineering approaches from the database
+db_approaches = get_geoengineering_approaches()
+
+# Convert database data into a dictionary format for easier use in the UI
+approaches = {}
+for approach in db_approaches:
+    approaches[approach['name']] = {
+        "description": approach['description'],
+        "methods": approach['methods'],
+        "advantages": approach['advantages'],
+        "challenges": approach['challenges'],
+        # Additional metrics from database
+        "effectiveness": approach['effectiveness'],
+        "feasibility": approach['feasibility'],
+        "cost_efficiency": approach['cost_efficiency'],
+        "environmental_impact": approach['environmental_impact'],
+        "technological_readiness": approach['technological_readiness'],
+        "scalability": approach['scalability']
     }
-}
 
 # Display comparison chart
 st.plotly_chart(plot_geoengineering_comparison(), use_container_width=True)
@@ -67,6 +50,24 @@ for i, (approach, info) in enumerate(approaches.items()):
         st.markdown(f"### {approach}")
         st.markdown(info["description"])
         
+        # Add metrics scorecard at the top
+        st.subheader("Metrics")
+        metric_cols = st.columns(6)
+        
+        metrics = [
+            ("Effectiveness", info["effectiveness"]),
+            ("Feasibility", info["feasibility"]),
+            ("Cost Efficiency", info["cost_efficiency"]),
+            ("Environmental Impact", info["environmental_impact"]),
+            ("Tech Readiness", info["technological_readiness"]),
+            ("Scalability", info["scalability"])
+        ]
+        
+        for idx, (metric_name, metric_value) in enumerate(metrics):
+            with metric_cols[idx]:
+                st.metric(metric_name, f"{metric_value}/10")
+        
+        # Add details in two columns
         col1, col2 = st.columns(2)
         
         with col1:

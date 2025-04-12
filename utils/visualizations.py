@@ -182,31 +182,45 @@ def plot_geoengineering_comparison():
     plotly.graph_objects.Figure
         Plotly figure object containing the comparison chart
     """
-    # Define the approaches and their characteristics
-    approaches = [
-        "Salinity Reduction",
-        "Ice Thickening",
-        "Reflective Materials",
-        "Undersea Barriers",
-        "Cloud Seeding",
-        "Geotextiles"
-    ]
+    # Import here to avoid circular imports
+    from utils.database import get_geoengineering_approaches
     
-    # Define metrics for each approach (1-10 scale, 10 being best)
-    effectiveness = [7, 6, 8, 7, 5, 4]
-    feasibility = [5, 7, 6, 3, 6, 5]
-    cost_efficiency = [4, 6, 5, 2, 7, 3]
-    environmental_impact = [6, 7, 4, 5, 5, 6]  # Higher is better (less negative impact)
+    # Get approaches from database
+    approaches_data = get_geoengineering_approaches()
+    
+    # Create lists to store data
+    approaches = []
+    effectiveness = []
+    feasibility = []
+    cost_efficiency = []
+    environmental_impact = []
+    technological_readiness = []
+    scalability = []
+    
+    # Extract data from database results
+    for approach in approaches_data:
+        approaches.append(approach['name'])
+        effectiveness.append(approach['effectiveness'])
+        feasibility.append(approach['feasibility'])
+        cost_efficiency.append(approach['cost_efficiency'])
+        environmental_impact.append(approach['environmental_impact'])
+        technological_readiness.append(approach['technological_readiness'])
+        scalability.append(approach['scalability'])
     
     # Create the plot
     fig = go.Figure()
     
-    categories = ['Effectiveness', 'Feasibility', 'Cost Efficiency', 'Environmental Impact']
+    # Define categories for the radar chart
+    categories = ['Effectiveness', 'Feasibility', 'Cost Efficiency', 
+                 'Environmental Impact', 'Tech Readiness', 'Scalability']
     
+    # Add traces for each approach
     for i, approach in enumerate(approaches):
         fig.add_trace(
             go.Scatterpolar(
-                r=[effectiveness[i], feasibility[i], cost_efficiency[i], environmental_impact[i], effectiveness[i]],
+                r=[effectiveness[i], feasibility[i], cost_efficiency[i], 
+                   environmental_impact[i], technological_readiness[i], 
+                   scalability[i], effectiveness[i]],  # Close the loop by repeating the first point
                 theta=categories + [categories[0]],
                 fill='toself',
                 name=approach
