@@ -605,6 +605,19 @@ wheels = [
 ]
 
 [[package]]
+name = "plotly"
+version = "5.18.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "tenacity" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0d/17/ba496e60f95020227a15f73965a64ea3f176cae7faed2d9302a14524b681/plotly-5.18.0.tar.gz", hash = "sha256:360a31e6fbb49d12b007036eb6929521343d6bee2236f8459915821baefa2cbb", size = 7824864 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/07/72953cf70e3bd3a24cbc3e743e6f8539abe6e3e6d83c3c0c83426eaffd39/plotly-5.18.0-py3-none-any.whl", hash = "sha256:23aa8ea2f4fb364a20d34ad38235524bd9d691bf5299e800bca608c31e8db8de", size = 15643397 },
+]
+
+[[package]]
 name = "protobuf"
 version = "5.29.4"
 source = { registry = "https://pypi.org/simple" }
@@ -716,12 +729,18 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "plotly" },
     { name = "streamlit" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.1" },
+    { name = "numpy", specifier = ">=2.2.4" },
+    { name = "pandas", specifier = ">=2.2.3" },
+    { name = "plotly", specifier = "==5.18.0" },
     { name = "streamlit", specifier = ">=1.44.1" },
 ]
 
