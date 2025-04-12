@@ -25,24 +25,29 @@ tab1, tab2, tab3 = st.tabs(["Saved Scenarios", "Save Current Scenario", "History
 with tab1:
     st.subheader("Your Saved Scenarios")
     
-    # Get all saved scenarios
-    scenarios = get_scenarios()
-    
-    if not scenarios:
-        st.info("You don't have any saved scenarios yet. Use the 'Save Current Scenario' tab to create one.")
-    else:
-        # Convert to DataFrame for display
-        df = pd.DataFrame(scenarios)
-        df['created_at'] = pd.to_datetime(df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+    try:
+        # Get all saved scenarios
+        scenarios = get_scenarios()
         
-        # Display only relevant columns
-        display_df = df[['id', 'name', 'initial_salinity', 'target_salinity', 'area_km2', 'depth_m', 'created_at']]
-        st.dataframe(display_df, use_container_width=True)
-        
-        # Select scenario to view details or load
-        selected_id = st.selectbox("Select scenario to view or load:", 
-                                   options=[s['id'] for s in scenarios],
-                                   format_func=lambda x: next((s['name'] for s in scenarios if s['id'] == x), str(x)))
+        if not scenarios:
+            st.info("You don't have any saved scenarios yet. Use the 'Save Current Scenario' tab to create one.")
+        else:
+            # Convert to DataFrame for display
+            df = pd.DataFrame(scenarios)
+            df['created_at'] = pd.to_datetime(df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+            
+            # Display only relevant columns
+            display_df = df[['id', 'name', 'initial_salinity', 'target_salinity', 'area_km2', 'depth_m', 'created_at']]
+            st.dataframe(display_df, use_container_width=True)
+            
+            # Select scenario to view details or load
+            selected_id = st.selectbox("Select scenario to view or load:", 
+                                      options=[s['id'] for s in scenarios],
+                                      format_func=lambda x: next((s['name'] for s in scenarios if s['id'] == x), str(x)))
+    except Exception as e:
+        st.error(f"Error retrieving saved scenarios: {e}")
+        st.info("Database connection issue. Please try again later.")
+        scenarios = []
         
         if selected_id:
             selected_scenario = next((s for s in scenarios if s['id'] == selected_id), None)

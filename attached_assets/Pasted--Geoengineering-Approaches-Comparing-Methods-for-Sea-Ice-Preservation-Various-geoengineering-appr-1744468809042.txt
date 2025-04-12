@@ -1,0 +1,58 @@
+
+Geoengineering Approaches
+Comparing Methods for Sea Ice Preservation
+Various geoengineering approaches have been proposed to preserve sea ice and slow the impacts of climate change. This page compares these different methods, with a focus on salinity reduction techniques.
+
+Overview of Geoengineering Approaches
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) SSL connection has been closed unexpectedly [SQL: SELECT geoengineering_approaches.id AS geoengineering_approaches_id, geoengineering_approaches.name AS geoengineering_approaches_name, geoengineering_approaches.description AS geoengineering_approaches_description, geoengineering_approaches.effectiveness AS geoengineering_approaches_effectiveness, geoengineering_approaches.feasibility AS geoengineering_approaches_feasibility, geoengineering_approaches.cost_efficiency AS geoengineering_approaches_cost_efficiency, geoengineering_approaches.environmental_impact AS geoengineering_approaches_environmental_impact, geoengineering_approaches.technological_readiness AS geoengineering_approaches_technological_readiness, geoengineering_approaches.scalability AS geoengineering_approaches_scalability, geoengineering_approaches.methods AS geoengineering_approaches_methods, geoengineering_approaches.advantages AS geoengineering_approaches_advantages, geoengineering_approaches.challenges AS geoengineering_approaches_challenges FROM geoengineering_approaches] (Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback:
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 121, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 639, in code_to_exec
+    _mpa_v1(self._main_script_path)
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 159, in _mpa_v1
+    page.run()
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/streamlit/navigation/page.py", line 297, in run
+    exec(code, module.__dict__)
+File "/home/runner/workspace/pages/04_Geoengineering_Approaches.py", line 22, in <module>
+    db_approaches = get_geoengineering_approaches()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/utils/database.py", line 420, in get_geoengineering_approaches
+    for a in session.query(GeoEngineeringApproach).all()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)

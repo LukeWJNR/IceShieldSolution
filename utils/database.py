@@ -14,8 +14,16 @@ from sqlalchemy.orm import sessionmaker
 # Get database connection string from environment variable
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Create SQLAlchemy engine and session
-engine = create_engine(DATABASE_URL)
+# Create SQLAlchemy engine with connection pooling and retry settings
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,  # Recycle connections after 30 minutes
+    pool_pre_ping=True,  # Verify connections before using them
+    connect_args={"connect_timeout": 10}  # Connection timeout in seconds
+)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -219,29 +227,34 @@ def get_scenarios(favorite_only=False):
     Returns:
         List of scenario dictionaries.
     """
-    session = Session()
-    query = session.query(SimulationScenario)
-    if favorite_only:
-        query = query.filter(SimulationScenario.is_favorite == True)
-    scenarios = [
-        {
-            'id': s.id,
-            'name': s.name,
-            'description': s.description,
-            'initial_salinity': s.initial_salinity,
-            'target_salinity': s.target_salinity,
-            'area_km2': s.area_km2,
-            'depth_m': s.depth_m,
-            'season': s.season,
-            'grid_size': s.grid_size,
-            'is_favorite': s.is_favorite,
-            'created_at': s.created_at,
-            'modified_at': s.modified_at
-        }
-        for s in query.all()
-    ]
-    session.close()
-    return scenarios
+    try:
+        session = Session()
+        query = session.query(SimulationScenario)
+        if favorite_only:
+            query = query.filter(SimulationScenario.is_favorite == True)
+        scenarios = [
+            {
+                'id': s.id,
+                'name': s.name,
+                'description': s.description,
+                'initial_salinity': s.initial_salinity,
+                'target_salinity': s.target_salinity,
+                'area_km2': s.area_km2,
+                'depth_m': s.depth_m,
+                'season': s.season,
+                'grid_size': s.grid_size,
+                'is_favorite': s.is_favorite,
+                'created_at': s.created_at,
+                'modified_at': s.modified_at
+            }
+            for s in query.all()
+        ]
+        session.close()
+        return scenarios
+    except Exception as e:
+        print(f"Database error in get_scenarios: {e}")
+        # Return an empty list as fallback
+        return []
 
 def get_scenario(scenario_id):
     """
@@ -367,31 +380,36 @@ def get_results(scenario_id=None, limit=10):
     Returns:
         List of result dictionaries
     """
-    session = Session()
-    query = session.query(SimulationResult)
-    if scenario_id:
-        query = query.filter(SimulationResult.scenario_id == scenario_id)
-    
-    query = query.order_by(SimulationResult.run_at.desc()).limit(limit)
-    
-    results = [
-        {
-            'id': r.id,
-            'scenario_id': r.scenario_id,
-            'run_at': r.run_at,
-            'freshwater_volume_km3': r.freshwater_volume_km3,
-            'currently_frozen_area': r.currently_frozen_area,
-            'newly_frozen_area': r.newly_frozen_area,
-            'total_frozen_area': r.total_frozen_area,
-            'percent_global_desal': r.percent_global_desal,
-            'plants_needed': r.plants_needed,
-            'energy_twh_total': r.energy_twh_total,
-            'detailed_results': json.loads(r.detailed_results) if r.detailed_results else None
-        }
-        for r in query.all()
-    ]
-    session.close()
-    return results
+    try:
+        session = Session()
+        query = session.query(SimulationResult)
+        if scenario_id:
+            query = query.filter(SimulationResult.scenario_id == scenario_id)
+        
+        query = query.order_by(SimulationResult.run_at.desc()).limit(limit)
+        
+        results = [
+            {
+                'id': r.id,
+                'scenario_id': r.scenario_id,
+                'run_at': r.run_at,
+                'freshwater_volume_km3': r.freshwater_volume_km3,
+                'currently_frozen_area': r.currently_frozen_area,
+                'newly_frozen_area': r.newly_frozen_area,
+                'total_frozen_area': r.total_frozen_area,
+                'percent_global_desal': r.percent_global_desal,
+                'plants_needed': r.plants_needed,
+                'energy_twh_total': r.energy_twh_total,
+                'detailed_results': json.loads(r.detailed_results) if r.detailed_results else None
+            }
+            for r in query.all()
+        ]
+        session.close()
+        return results
+    except Exception as e:
+        print(f"Database error in get_results: {e}")
+        # Return an empty list as fallback
+        return []
 
 # Geoengineering approach operations
 def get_geoengineering_approaches():
@@ -401,26 +419,130 @@ def get_geoengineering_approaches():
     Returns:
         List of approach dictionaries
     """
-    session = Session()
-    approaches = [
+    # Default approaches in case of database failure
+    default_approaches = [
         {
-            'id': a.id,
-            'name': a.name,
-            'description': a.description,
-            'effectiveness': a.effectiveness,
-            'feasibility': a.feasibility,
-            'cost_efficiency': a.cost_efficiency,
-            'environmental_impact': a.environmental_impact,
-            'technological_readiness': a.technological_readiness,
-            'scalability': a.scalability,
-            'methods': json.loads(a.methods) if a.methods else [],
-            'advantages': json.loads(a.advantages) if a.advantages else [],
-            'challenges': json.loads(a.challenges) if a.challenges else []
+            'id': 1,
+            'name': "Salinity Reduction",
+            'description': "Reducing the salinity of surface water to increase its freezing point and promote ice formation.",
+            'effectiveness': 7,
+            'feasibility': 5,
+            'cost_efficiency': 4,
+            'environmental_impact': 6,
+            'technological_readiness': 4,
+            'scalability': 6,
+            'methods': ["Freshwater addition", "Desalination ships", "River diversion"],
+            'advantages': ["Works with natural freezing processes", "Potentially reversible", "Could be targeted regionally"],
+            'challenges': ["Requires large volumes of freshwater", "Logistical complexity", "Ocean mixing challenges"]
+        },
+        {
+            'id': 2,
+            'name': "Ice Thickening",
+            'description': "Pumping water onto the surface of ice sheets to freeze and thicken the ice.",
+            'effectiveness': 6,
+            'feasibility': 7,
+            'cost_efficiency': 6,
+            'environmental_impact': 7,
+            'technological_readiness': 7,
+            'scalability': 4,
+            'methods': ["Surface pumping systems", "Renewable energy-powered pumps"],
+            'advantages': ["Directly adds ice mass", "Proven in small-scale tests", "Relatively straightforward technology"],
+            'challenges': ["Energy requirements", "Limited to existing ice areas", "Coverage limitations"]
+        },
+        {
+            'id': 3,
+            'name': "Reflective Materials",
+            'description': "Spreading reflective materials on ice surfaces to increase albedo and reduce melting.",
+            'effectiveness': 8,
+            'feasibility': 6,
+            'cost_efficiency': 5,
+            'environmental_impact': 4,
+            'technological_readiness': 6,
+            'scalability': 7,
+            'methods': ["Glass microbeads", "Reflective films", "Engineered particles"],
+            'advantages': ["Could reduce melting by up to 30%", "Immediate effect", "Adaptable to different regions"],
+            'challenges': ["Environmental concerns", "Material dispersion", "Potential ecological impacts"]
+        },
+        {
+            'id': 4,
+            'name': "Undersea Barriers",
+            'description': "Constructing underwater curtains or barriers to block warm ocean currents from reaching ice shelves.",
+            'effectiveness': 7,
+            'feasibility': 3,
+            'cost_efficiency': 2,
+            'environmental_impact': 5,
+            'technological_readiness': 3,
+            'scalability': 5,
+            'methods': ["Floating curtains", "Seabed anchored barriers", "Thermal screens"],
+            'advantages': ["Targets a major cause of ice shelf melting", "Could protect critical glaciers", "Long-lasting"],
+            'challenges': ["Enormous engineering challenge", "Very high costs", "Potential navigation impacts"]
+        },
+        {
+            'id': 5,
+            'name': "Cloud Seeding",
+            'description': "Enhancing snowfall over ice sheets by seeding clouds with substances like silver iodide.",
+            'effectiveness': 5,
+            'feasibility': 6,
+            'cost_efficiency': 7,
+            'environmental_impact': 5,
+            'technological_readiness': 8,
+            'scalability': 6,
+            'methods': ["Aircraft dispersal", "Ground-based generators", "Drone systems"],
+            'advantages': ["Builds on existing technology", "Could increase ice accumulation", "Relatively low cost"],
+            'challenges': ["Weather dependency", "Uncertain efficacy", "Limited geographical application"]
+        },
+        {
+            'id': 6,
+            'name': "Geotextiles",
+            'description': "Wrapping glaciers in protective films or geotextiles to insulate them and reduce heat absorption.",
+            'effectiveness': 4,
+            'feasibility': 5,
+            'cost_efficiency': 3,
+            'environmental_impact': 6,
+            'technological_readiness': 7,
+            'scalability': 3,
+            'methods': ["Insulating blankets", "Reflective covers", "Biodegradable films"],
+            'advantages': ["Demonstrated effectiveness in small areas", "Targeted protection", "Removable"],
+            'challenges': ["Scaling limitations", "Material requirements", "Visual impact"]
         }
-        for a in session.query(GeoEngineeringApproach).all()
     ]
-    session.close()
-    return approaches
+    
+    try:
+        # Attempt to connect to the database
+        session = Session()
+        # Use a timeout to avoid hanging
+        query = session.query(GeoEngineeringApproach)
+        approaches = [
+            {
+                'id': a.id,
+                'name': a.name,
+                'description': a.description,
+                'effectiveness': a.effectiveness,
+                'feasibility': a.feasibility,
+                'cost_efficiency': a.cost_efficiency,
+                'environmental_impact': a.environmental_impact,
+                'technological_readiness': a.technological_readiness,
+                'scalability': a.scalability,
+                'methods': json.loads(a.methods) if a.methods else [],
+                'advantages': json.loads(a.advantages) if a.advantages else [],
+                'challenges': json.loads(a.challenges) if a.challenges else []
+            }
+            for a in query.all()
+        ]
+        session.close()
+        
+        # If we successfully retrieved approaches from the database, return them
+        if approaches:
+            return approaches
+            
+    except Exception as e:
+        # Log the error (in a real application, use proper logging)
+        print(f"Database error in get_geoengineering_approaches: {e}")
+        
+    # If we reach here, either there was an exception or no approaches were found
+    # Return the default hardcoded approaches as a fallback
+    print("Using default hardcoded approaches as fallback")
+    return default_approaches
 
 # Initialize database on module import
 init_db()

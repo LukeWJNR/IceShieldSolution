@@ -19,24 +19,30 @@ This page compares these different methods, with a focus on salinity reduction t
 st.subheader("Overview of Geoengineering Approaches")
 
 # Fetch geoengineering approaches from the database
-db_approaches = get_geoengineering_approaches()
-
-# Convert database data into a dictionary format for easier use in the UI
-approaches = {}
-for approach in db_approaches:
-    approaches[approach['name']] = {
-        "description": approach['description'],
-        "methods": approach['methods'],
-        "advantages": approach['advantages'],
-        "challenges": approach['challenges'],
-        # Additional metrics from database
-        "effectiveness": approach['effectiveness'],
-        "feasibility": approach['feasibility'],
-        "cost_efficiency": approach['cost_efficiency'],
-        "environmental_impact": approach['environmental_impact'],
-        "technological_readiness": approach['technological_readiness'],
-        "scalability": approach['scalability']
-    }
+try:
+    db_approaches = get_geoengineering_approaches()
+    
+    # Convert database data into a dictionary format for easier use in the UI
+    approaches = {}
+    for approach in db_approaches:
+        approaches[approach['name']] = {
+            "description": approach['description'],
+            "methods": approach['methods'],
+            "advantages": approach['advantages'],
+            "challenges": approach['challenges'],
+            # Additional metrics from database
+            "effectiveness": approach['effectiveness'],
+            "feasibility": approach['feasibility'],
+            "cost_efficiency": approach['cost_efficiency'],
+            "environmental_impact": approach['environmental_impact'],
+            "technological_readiness": approach['technological_readiness'],
+            "scalability": approach['scalability']
+        }
+except Exception as e:
+    st.error(f"Error retrieving data from database: {e}")
+    st.info("Using default data as a fallback.")
+    # The get_geoengineering_approaches function has a built-in fallback that will return 
+    # default data if the database is unavailable, so the error should be handled gracefully.
 
 # Display comparison chart
 st.plotly_chart(plot_geoengineering_comparison(), use_container_width=True)
