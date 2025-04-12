@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from utils.calculations import calculate_freshwater_required, calculate_desalination_metrics
 from utils.visualizations import plot_freshwater_requirements
+from utils.database import save_result, save_scenario
 
 st.title("Freshwater Requirements Calculator")
 
@@ -38,11 +39,21 @@ with col2:
                      step=1.0,
                      help="Depth of the surface layer to be diluted")
 
+# Store parameters in session state for other pages to access
+st.session_state['initial_salinity'] = initial_salinity
+st.session_state['target_salinity'] = target_salinity
+st.session_state['area_km2'] = area
+st.session_state['depth_m'] = depth
+
 # Calculate freshwater requirements
 if initial_salinity <= target_salinity:
     st.error("Target salinity must be lower than initial salinity for dilution to occur.")
 else:
     results = calculate_freshwater_required(initial_salinity, target_salinity, area, depth)
+    
+    # Store results in session state for saving to database later
+    st.session_state['freshwater_volume_km3'] = results['freshwater_volume_km3']
+    st.session_state['percent_global_desal'] = results['percent_global_desal']
     
     st.subheader("Freshwater Requirements")
     
@@ -125,3 +136,52 @@ else:
     
     Each approach has different costs, benefits, and environmental considerations.
     """)
+    
+    # Add a divider
+    st.markdown("---")
+    
+    # Save results section
+    st.subheader("Save This Scenario")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        scenario_name = st.text_input("Scenario Name", value=f"Freshwater Scenario {initial_salinity}->{target_salinity} PSU")
+    
+    with col2:
+        save_button = st.button("Save Results to Database")
+        
+    if save_button:
+        # Store desalination metrics in session state
+        st.session_state['plants_needed'] = desal_metrics['plants_needed']
+        st.session_state['energy_twh_total'] = desal_metrics['energy_twh_total']
+        
+        # Save the scenario
+        scenario_id = save_scenario(
+            name=scenario_name,
+            description=f"Salinity reduction from {initial_salinity} to {target_salinity} PSU over {area:,.0f} km² area with {depth}m depth.",
+            initial_salinity=initial_salinity,
+            target_salinity=target_salinity,
+            area_km2=area,
+            depth_m=depth,
+            season="N/A",
+            grid_size=100
+        )
+        
+        # Save the results
+        if scenario_id:
+            result_id = save_result(
+                scenario_id=scenario_id,
+                freshwater_volume_km3=results['freshwater_volume_km3'],
+                percent_global_desal=results['percent_global_desal'],
+                plants_needed=desal_metrics['plants_needed'],
+                energy_twh_total=desal_metrics['energy_twh_total'],
+                detailed_results={
+                    'river_comparisons': results['river_comparisons'],
+                    'seawater_volume_km3': results['seawater_volume_km3']
+                }
+            )
+            
+            st.success("Scenario and results saved successfully! View them in the 'Saved Simulations' page.")
+        else:
+            st.error("Failed to save scenario.")

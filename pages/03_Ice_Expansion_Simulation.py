@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils.calculations import calculate_freezing_point, estimate_newly_frozen_area
 from utils.visualizations import plot_arctic_map
+from utils.database import save_scenario, save_result
 
 st.title("Ice Expansion Simulation")
 
@@ -177,6 +178,65 @@ but would freeze if the salinity were reduced from {initial_salinity} PSU to {ta
 This simplified model suggests that a {initial_salinity-target_salinity:.1f} PSU reduction in salinity 
 could increase the frozen area by approximately {results['newly_frozen_area']:,} km².
 """)
+
+# Store data in session state for other pages
+st.session_state['initial_salinity'] = initial_salinity
+st.session_state['target_salinity'] = target_salinity
+st.session_state['season'] = season
+st.session_state['grid_size'] = grid_size
+st.session_state['currently_frozen_area'] = results['currently_frozen_area']
+st.session_state['newly_frozen_area'] = results['newly_frozen_area']
+st.session_state['total_frozen_area'] = results['total_frozen_area']
+
+# Add a divider
+st.markdown("---")
+
+# Save simulation section
+st.subheader("Save This Simulation")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    scenario_name = st.text_input("Simulation Name", value=f"Ice Simulation {season} {initial_salinity}->{target_salinity} PSU")
+
+with col2:
+    save_button = st.button("Save Simulation to Database")
+    
+if save_button:
+    # Save the scenario
+    scenario_id = save_scenario(
+        name=scenario_name,
+        description=f"Ice expansion simulation for {season} season with salinity reduction from {initial_salinity} to {target_salinity} PSU.",
+        initial_salinity=initial_salinity,
+        target_salinity=target_salinity,
+        area_km2=results['total_area'],
+        depth_m=10.0,  # Default depth for simplicity
+        season=season,
+        grid_size=grid_size
+    )
+    
+    # Save the results
+    if scenario_id:
+        result_id = save_result(
+            scenario_id=scenario_id,
+            freshwater_volume_km3=None,  # Not calculated in this simulation
+            currently_frozen_area=results['currently_frozen_area'],
+            newly_frozen_area=results['newly_frozen_area'],
+            total_frozen_area=results['total_frozen_area'],
+            detailed_results={
+                'initial_freezing_point': initial_freezing,
+                'target_freezing_point': target_freezing,
+                'freezing_point_change': initial_freezing - target_freezing,
+                'season': season
+            }
+        )
+        
+        st.success("Simulation saved successfully! View it in the 'Saved Simulations' page.")
+    else:
+        st.error("Failed to save simulation.")
+
+# Add a divider
+st.markdown("---")
 
 st.subheader("Real-World Considerations")
 st.markdown("""
